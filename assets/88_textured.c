@@ -21,6 +21,24 @@ static char *g_map[] = {
     NULL
 };
 
+static void fill_checker_texture(t_game *gm, t_tex *t, int c1, int c2)
+{
+	int w = 64, h = 64;
+	t->w = w; t->h = h;
+	t->img.img = mlx_new_image(gm->mlx, w, h);
+	t->img.data_img = mlx_get_data_addr(t->img.img, &t->img.bpp, &t->img.line_len, &t->img.endian);
+	int tile = 8;
+	for (int y = 0; y < h; ++y)
+	{
+		for (int x = 0; x < w; ++x)
+		{
+			int use_c1 = ((x / tile) + (y / tile)) & 1;
+			char *dst = t->img.data_img + y * t->img.line_len + x * (t->img.bpp / 8);
+			*(unsigned int *)dst = use_c1 ? c1 : c2;
+		}
+	}
+}
+
 int	init_game(t_game *gm)
 {
 	double	fov;
@@ -53,6 +71,32 @@ int	init_game(t_game *gm)
 	gm->player.plane_x = gm->player.dir_y * fov;
 	gm->player.plane_y = -gm->player.dir_x * fov;
 	mlx_mouse_hide(gm->mlx, gm->win);
+
+	// Load 4 wall textures (N,S,W,E)
+	const char *paths[4] = {
+		"assets/north.xpm",
+		"assets/south.xpm",
+		"assets/west.xpm",
+		"assets/east.xpm"
+	};
+	for (int i = 0; i < 4; ++i)
+	{
+		gm->tex[i].img.img = mlx_xpm_file_to_image(gm->mlx, (char *)paths[i], &gm->tex[i].w, &gm->tex[i].h);
+		if (!gm->tex[i].img.img)
+		{
+			// Fallback: generate procedural checker if file missing
+			int cA[4] = {0x6A6AFF, 0xFF6A6A, 0x6AFF6A, 0xFFFF6A};
+			int cB[4] = {0x2A2A80, 0x802A2A, 0x2A802A, 0x80802A};
+			fprintf(stderr, "Failed to load %s, generating checker fallback.\n", paths[i]);
+			fill_checker_texture(gm, &gm->tex[i], cA[i], cB[i]);
+		}
+		else
+		{
+			gm->tex[i].img.data_img = mlx_get_data_addr(gm->tex[i].img.img, &gm->tex[i].img.bpp, &gm->tex[i].img.line_len, &gm->tex[i].img.endian);
+			if (!gm->tex[i].img.data_img)
+				return (1);
+		}
+	}
 	return (0);
 }
 
@@ -240,7 +284,7 @@ void	render_image(t_game *gm)
 			per_wall_dist = (map_x - gm->player.x + (1 - step_x) / 2) / ray_dir_x;
 		else
 			per_wall_dist = (map_y - gm->player.y + (1 - step_y) / 2) / ray_dir_y;
-	//5// calculate wall height
+		//5// calculate wall height
 		int	line_height = (int)(gm->height / per_wall_dist);
 		int	draw_start = -line_height / 2 + gm->height / 2;
 		int	draw_end = line_height / 2 + gm->height / 2;
@@ -248,10 +292,41 @@ void	render_image(t_game *gm)
 			draw_start = 0;
 		if (draw_end >= gm->height)
 			draw_end = gm->height - 1;
-	//6// draw the wall column
+		//6// choose texture index by side and ray direction
+		int tex_id;
+		// side==0: hit vertical wall (x-side). Ray to the right hits West wall; to the left hits East wall.
+		// side==1: hit horizontal wall (y-side). Ray up hits North wall; down hits South wall.
+		if (side == 0)
+			tex_id = (ray_dir_x > 0) ? 2 /* West */ : 3 /* East */;
+		else
+			tex_id = (ray_dir_y > 0) ? 0 /* North */ : 1 /* South */;
+		t_tex *tex = &gm->tex[tex_id];
+
+		// Find exact hit position on wall to compute texture X coordinate
+		double wall_x;
+		if (side == 0)
+			wall_x = gm->player.y + per_wall_dist * ray_dir_y;
+		else
+			wall_x = gm->player.x + per_wall_dist * ray_dir_x;
+		wall_x -= floor(wall_x);
+		int tex_x = (int)(wall_x * (double)tex->w);
+		// Flip texture horizontally for certain sides for consistency
+		if (side == 0 && ray_dir_x > 0) tex_x = tex->w - tex_x - 1;
+		if (side == 1 && ray_dir_y < 0) tex_x = tex->w - tex_x - 1;
+
+		// Step per screen pixel in texture space
+		double step = (double)tex->h / (double)line_height;
+		double tex_pos = (draw_start - gm->height / 2 + line_height / 2) * step;
 		y = draw_start - 1;
 		while (++y <= draw_end)
-			put_pixel(gm, x, y, 0x303030);
+		{
+			int tex_y = (int)tex_pos & (tex->h - 1);
+			tex_pos += step;
+			// Sample pixel from texture
+			char *src = tex->img.data_img + tex_y * tex->img.line_len + tex_x * (tex->img.bpp / 8);
+			unsigned int color = *(unsigned int *)src;
+			put_pixel(gm, x, y, color);
+		}
 	}
 }
 
@@ -342,9 +417,9 @@ int main()
 	if (init_game(&gm))
 		return (1);
 	mlx_loop_hook(gm.mlx, main_loop, &gm);
-	// mlx_hook(gm.win, 2, 1L<<0, key_press, &gm);      /* KeyPress */
-	// mlx_hook(gm.win, 3, 1L<<1, key_release, &gm);    /* KeyRelease */
-	// mlx_hook(gm.win, 17, 0, close_win, &gm);         /* DestroyNotify */
+	mlx_hook(gm.win, 2, 1L<<0, key_press, &gm);      /* KeyPress */
+	mlx_hook(gm.win, 3, 1L<<1, key_release, &gm);    /* KeyRelease */
+	mlx_hook(gm.win, 17, 0, close_win, &gm);         /* DestroyNotify */
 	mlx_hook(gm.win, MotionNotify, PointerMotionMask, mouse_move, &gm); /* Mouse move */
 	mlx_loop(gm.mlx);
 	return (0);

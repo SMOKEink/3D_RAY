@@ -48,8 +48,10 @@ typedef struct s_game
 	t_img		frame;
 	t_player	player;
 	t_keys		keys;
-	int			map_width;
-	int			map_height;
+	int			width;
+	int			height;
+	int			map_w;
+	int			map_h;
 	char		**map;
 }	t_game;
 
