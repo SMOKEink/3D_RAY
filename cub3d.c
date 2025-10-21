@@ -5,9 +5,9 @@ static char *g_map[] = {
 	"100000000000000000000001",
 	"101111011111111111101101",
 	"101000010000000001001001",
-	"101011110111111101111101",
+	"101011110111011101111101",
 	"101010000100000101000001",
-	"101011110111S11011101101",
+	"101011110111011011101101",
 	"101000010000000000010001",
 	"111110111111011111011101",
 	"100010100001010000010001",
@@ -29,12 +29,10 @@ int	init_game(t_game *gm)
 	gm->mlx = mlx_init();
 	if (!gm->mlx)
 		return (1);
-	gm->width = 1280;
-	gm->height = 720;
-	gm->win = mlx_new_window(gm->mlx, gm->width, gm->height, "cub3d");
+	gm->win = mlx_new_window(gm->mlx, WIDTH, HEIGHT, "cub3d");
 	if (!gm->win)
 		return (1);
-	gm->frame.img = mlx_new_image(gm->mlx, gm->width, gm->height);
+	gm->frame.img = mlx_new_image(gm->mlx, WIDTH, HEIGHT);
 	if (!gm->frame.img)
 		return (1);
 	gm->frame.data_img = mlx_get_data_addr(gm->frame.img, &gm->frame.bpp, &gm->frame.line_len, &gm->frame.endian);
@@ -133,7 +131,7 @@ void	clear_image(t_game *game)
 	int	*img_data;
 
 	img_data = (int *)game->frame.data_img;
-	total = (game->frame.line_len / 4) * game->height;
+	total = (game->frame.line_len / 4) * HEIGHT;
 	i = -1;
 	while (++i < total)
 		img_data[i] = 0x000000;
@@ -143,7 +141,7 @@ void	put_pixel(t_game *gm, int x, int y, int color)
 {
 	char	*dst;
 
-	if (x < 0 || y < 0 || x >= gm->width || y >= gm->height)
+	if (x < 0 || y < 0 || x >= WIDTH || y >= HEIGHT)
 		return ;
 	dst = gm->frame.data_img + y * gm->frame.line_len + x * (gm->frame.bpp / 8);
 	*(unsigned int *)dst = color;
@@ -156,25 +154,27 @@ void	render_image(t_game *gm)
 
 	clear_image(gm);
 	y = -1;
-	while (++y < gm->height / 2)
+	while (++y < HEIGHT / 2)
 	{
 		x = -1;
-		while (++x < gm->width)
+		while (++x < WIDTH)
 			put_pixel(gm, x, y, 0x87CEFA);
 	}
-	y = gm->height / 2;
-	while (++y < gm->height)
+	y = HEIGHT / 2;
+	while (++y < HEIGHT)
 	{
 		x = -1;
-		while (++x < gm->width)
+		while (++x < WIDTH)
 			put_pixel(gm, x, y, 0xD2B48C);
 	}
 
 	x = -1;
-	while (++x < gm->width)
+	while (++x < WIDTH)
 	{
+	// 	gm->player.plane_x = gm->player.dir_y * fov;
+	// 	gm->player.plane_y = -gm->player.dir_x * fov;
 	//1// compute ray direction
-		double	cam_x = 2 * x / (double)gm->width - 1;
+		double	cam_x = 2 * x / (double)WIDTH - 1;
 		double	ray_dir_x = gm->player.dir_x + gm->player.plane_x * cam_x;
 		double	ray_dir_y = gm->player.dir_y + gm->player.plane_y * cam_x;
 	//2// initialize DDA
@@ -241,13 +241,13 @@ void	render_image(t_game *gm)
 		else
 			per_wall_dist = (map_y - gm->player.y + (1 - step_y) / 2) / ray_dir_y;
 	//5// calculate wall height
-		int	line_height = (int)(gm->height / per_wall_dist);
-		int	draw_start = -line_height / 2 + gm->height / 2;
-		int	draw_end = line_height / 2 + gm->height / 2;
+		int	line_height = (int)(HEIGHT / per_wall_dist);
+		int	draw_start = -line_height / 2 + HEIGHT / 2;
+		int	draw_end = line_height / 2 + HEIGHT / 2;
 		if (draw_start < 0)
 			draw_start = 0;
-		if (draw_end >= gm->height)
-			draw_end = gm->height - 1;
+		if (draw_end >= HEIGHT)
+			draw_end = HEIGHT - 1;
 	//6// draw the wall column
 		y = draw_start - 1;
 		while (++y <= draw_end)
@@ -286,24 +286,37 @@ int close_win(t_game *g)
 }
 int key_press(int keycode, t_game *g)
 {
-	if (keycode == XK_Escape) close_win(g);
-	else if (keycode == XK_w) g->keys.up = 1;
-	else if (keycode == XK_s) g->keys.down = 1;
-	else if (keycode == XK_a) g->keys.left = 1;
-	else if (keycode == XK_d) g->keys.right = 1;
-	else if (keycode == XK_Left) g->keys.rot_l = 1;
-	else if (keycode == XK_Right) g->keys.rot_r = 1;
+	if (keycode == XK_Escape)
+		close_win(g);
+	else if (keycode == XK_w)
+		g->keys.up = 1;
+	else if (keycode == XK_s)
+		g->keys.down = 1;
+	else if (keycode == XK_a)
+		g->keys.left = 1;
+	else if (keycode == XK_d)
+		g->keys.right = 1;
+	else if (keycode == XK_Left)
+		g->keys.rot_l = 1;
+	else if (keycode == XK_Right)
+		g->keys.rot_r = 1;
 	return 0;
 }
 
 int key_release(int keycode, t_game *g)
 {
-	if (keycode == XK_w) g->keys.up = 0;
-	else if (keycode == XK_s) g->keys.down = 0;
-	else if (keycode == XK_a) g->keys.left = 0;
-	else if (keycode == XK_d) g->keys.right = 0;
-	else if (keycode == XK_Left) g->keys.rot_l = 0;
-	else if (keycode == XK_Right) g->keys.rot_r = 0;
+	if (keycode == XK_w)
+		g->keys.up = 0;
+	else if (keycode == XK_s)
+		g->keys.down = 0;
+	else if (keycode == XK_a)
+		g->keys.left = 0;
+	else if (keycode == XK_d)
+		g->keys.right = 0;
+	else if (keycode == XK_Left)
+		g->keys.rot_l = 0;
+	else if (keycode == XK_Right)
+		g->keys.rot_r = 0;
 	return 0;
 }
 
@@ -320,8 +333,8 @@ static void rotate_player(t_player *p, double angle)
 int mouse_move(int x, int y, t_game *g)
 {
 	/* Use window center as a stable reference and warp cursor back each frame */
-	int cx = g->width / 2;
-	int cy = g->height / 2;
+	int cx = WIDTH / 2;
+	int cy = HEIGHT / 2;
 	if (x == cx && y == cy)
 		return 0; /* ignore our own recenter event */
 	int dx = x - cx; /* horizontal delta from center */

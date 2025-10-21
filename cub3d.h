@@ -1,6 +1,9 @@
 #ifndef CUB3D_H
 # define CUB3D_H
 
+# define WIDTH 1280
+# define HEIGHT 720
+
 # include <stdlib.h>
 # include <unistd.h>
 # include <stdbool.h>
@@ -48,8 +51,6 @@ typedef struct s_game
 	t_img		frame;
 	t_player	player;
 	t_keys		keys;
-	int			width;
-	int			height;
 	int			map_w;
 	int			map_h;
 	char		**map;
