@@ -1,24 +1,24 @@
 #include "cub3d.h"
 
 static char *g_map[] = {
-    "111111111111111111111111",
-    "100000000000000000000001",
-    "101111011111111111101101",
-    "101000010000000001001001",
-    "101011110111111101111101",
-    "101010000100000101000001",
-    "101011110111S11011101101",
-    "101000010000000000010001",
-    "111110111111011111011101",
-    "100010100001010000010001",
-    "101110111101011111011101",
-    "101000000001000000000101",
-    "101011111101111111110101",
-    "101000100000100000010001",
-    "101110111111111111011101",
-    "1000000000000000000000N1",
-    "111111111111111111111111",
-    NULL
+	"111111111111111111111111",
+	"100000000000000000000001",
+	"101111011111111111101101",
+	"101000010000000001001001",
+	"101011110111111101111101",
+	"101010000100000101000001",
+	"101011110111S11011101101",
+	"101000010000000000010001",
+	"111110111111011111011101",
+	"100010100001010000010001",
+	"101110111101011111011101",
+	"101000000001000000000101",
+	"101011111101111111110101",
+	"101000100000100000010001",
+	"101110111111111111011101",
+	"1000000000000000000000N1",
+	"111111111111111111111111",
+	NULL
 };
 
 int	init_game(t_game *gm)
@@ -29,25 +29,25 @@ int	init_game(t_game *gm)
 	gm->mlx = mlx_init();
 	if (!gm->mlx)
 		return (1);
-	gm->win = mlx_new_window(gm->mlx, 800, 600, "cub3d");
+	gm->width = 1280;
+	gm->height = 720;
+	gm->win = mlx_new_window(gm->mlx, gm->width, gm->height, "cub3d");
 	if (!gm->win)
 		return (1);
-	gm->frame.img = mlx_new_image(gm->mlx, 800, 600);
+	gm->frame.img = mlx_new_image(gm->mlx, gm->width, gm->height);
 	if (!gm->frame.img)
 		return (1);
 	gm->frame.data_img = mlx_get_data_addr(gm->frame.img, &gm->frame.bpp, &gm->frame.line_len, &gm->frame.endian);
 	if (!gm->frame.data_img)
 		return (1);
-	gm->height = 600;
-	gm->width = 800;
 	gm->map = g_map;
+	gm->map_w = (int)strlen(gm->map[0]);
 	gm->map_h = 0;
-    while (gm->map[gm->map_h])
-        gm->map_h++;
-    gm->map_w = (int)strlen(gm->map[0]);
+	while (gm->map[gm->map_h])
+		gm->map_h++;
 	gm->player.x = 5.5;
 	gm->player.y = 5.5;
-	gm->player.dir_x = -1;
+	gm->player.dir_x = 1;
 	gm->player.dir_y = 0;
 	fov = 0.66;
 	gm->player.plane_x = gm->player.dir_y * fov;
@@ -75,8 +75,8 @@ void	move_player(t_game *gm)
 
 	if (gm->keys.up)
 	{
-		nx = p->x + p->dir_x * 0.01;
-		ny = p->y + p->dir_y * 0.01;
+		nx = p->x + p->dir_x * 0.025;
+		ny = p->y + p->dir_y * 0.025;
 		if (!is_wall(gm, (int)nx, (int)p->y))
 			p->x = nx;
 		if (!is_wall(gm, (int)p->x, (int)ny))
@@ -84,8 +84,8 @@ void	move_player(t_game *gm)
 	}
 	if (gm->keys.down)
 	{
-		nx = p->x - p->dir_x * 0.01;
-		ny = p->y - p->dir_y * 0.01;
+		nx = p->x - p->dir_x * 0.025;
+		ny = p->y - p->dir_y * 0.025;
 		if (!is_wall(gm, (int)nx, (int)p->y))
 			p->x = nx;
 		if (!is_wall(gm, (int)p->x, (int)ny))
@@ -93,8 +93,8 @@ void	move_player(t_game *gm)
 	}
 	if (gm->keys.right) // (y, -x)
 	{
-		nx = p->x + p->dir_y * 0.01;
-		ny = p->y - p->dir_x * 0.01;
+		nx = p->x + p->dir_y * 0.025;
+		ny = p->y - p->dir_x * 0.025;
 		if (!is_wall(gm, (int)nx, (int)p->y))
 			p->x = nx;
 		if (!is_wall(gm, (int)p->x, (int)ny))
@@ -102,8 +102,8 @@ void	move_player(t_game *gm)
 	}
 	if (gm->keys.left) // (-y, x)
 	{
-		nx = p->x - p->dir_y * 0.01;
-		ny = p->y + p->dir_x * 0.01;
+		nx = p->x - p->dir_y * 0.025;
+		ny = p->y + p->dir_x * 0.025;
 		if (!is_wall(gm, (int)nx, (int)p->y))
 			p->x = nx;
 		if (!is_wall(gm, (int)p->x, (int)ny))
@@ -123,7 +123,7 @@ void	move_player(t_game *gm)
 		prev_plane_x = p->plane_x;
 		p->plane_x = p->plane_x * cos(angle) - p->plane_y * sin(angle);
 		p->plane_y = prev_plane_x * sin(angle) + p->plane_y * cos(angle);
-	}	
+	}
 }
 
 void	clear_image(t_game *game)
@@ -136,7 +136,7 @@ void	clear_image(t_game *game)
 	total = (game->frame.line_len / 4) * game->height;
 	i = -1;
 	while (++i < total)
-		img_data[i] = 0x202020;
+		img_data[i] = 0x000000;
 }
 
 void	put_pixel(t_game *gm, int x, int y, int color)
@@ -319,19 +319,19 @@ static void rotate_player(t_player *p, double angle)
 
 int mouse_move(int x, int y, t_game *g)
 {
-    /* Use window center as a stable reference and warp cursor back each frame */
-    int cx = g->width / 2;
-    int cy = g->height / 2;
-    if (x == cx && y == cy)
-        return 0; /* ignore our own recenter event */
-    int dx = x - cx; /* horizontal delta from center */
-    (void)y; /* vertical ignored for now */
+	/* Use window center as a stable reference and warp cursor back each frame */
+	int cx = g->width / 2;
+	int cy = g->height / 2;
+	if (x == cx && y == cy)
+		return 0; /* ignore our own recenter event */
+	int dx = x - cx; /* horizontal delta from center */
+	(void)y; /* vertical ignored for now */
 	if (dx != 0) {
 		double angle = -dx * 0.0035; /* negative = clockwise when moving mouse to the right */
-        rotate_player(&g->player, angle);
-    }
-    mlx_mouse_move(g->mlx, g->win, cx, cy);
-    return 0;
+		rotate_player(&g->player, angle);
+	}
+	mlx_mouse_move(g->mlx, g->win, cx, cy);
+	return 0;
 }
 
 
@@ -342,10 +342,10 @@ int main()
 	if (init_game(&gm))
 		return (1);
 	mlx_loop_hook(gm.mlx, main_loop, &gm);
-	// mlx_hook(gm.win, 2, 1L<<0, key_press, &gm);      /* KeyPress */
-	// mlx_hook(gm.win, 3, 1L<<1, key_release, &gm);    /* KeyRelease */
-	// mlx_hook(gm.win, 17, 0, close_win, &gm);         /* DestroyNotify */
-	mlx_hook(gm.win, MotionNotify, PointerMotionMask, mouse_move, &gm); /* Mouse move */
+	mlx_hook(gm.win, 2, KeyPressMask, key_press, &gm);
+	mlx_hook(gm.win, 3, KeyReleaseMask, key_release, &gm);
+	mlx_hook(gm.win, 17, 0, close_win, &gm);
+	mlx_hook(gm.win, MotionNotify, PointerMotionMask, mouse_move, &gm);
 	mlx_loop(gm.mlx);
 	return (0);
 }
