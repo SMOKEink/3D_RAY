@@ -178,68 +178,69 @@ void	render_image(t_game *gm)
 		double	ray_dir_x = gm->player.dir_x + gm->player.plane_x * cam_x;
 		double	ray_dir_y = gm->player.dir_y + gm->player.plane_y * cam_x;
 	//2// initialize DDA
+		double side_distx;
+		double side_disty;
+		int	x_step;
+		int	y_step;
+		double t_x;
+		double t_y;
 		int map_x = (int)gm->player.x;
 		int map_y = (int)gm->player.y;
-		double delta_dist_x;
-		double delta_dist_y;
 		if (ray_dir_x != 0)
-			delta_dist_x = fabs(1 / ray_dir_x);
+			t_x = 1 / fabs(ray_dir_x);
 		else
-			delta_dist_x = 1e30;
+			t_x = INFINITY;
 		if (ray_dir_y != 0)
-			delta_dist_y = fabs(1 / ray_dir_y);
+			t_y = 1 / fabs(ray_dir_y);
 		else
-			delta_dist_y = 1e30;
-		double side_dist_x;
-		double side_dist_y;
-		int	step_x;
-		int	step_y;
-		bool	hit = 0;
-		bool	side = 0;
+			t_y = INFINITY;
+		////////////////////////////////
 		if (ray_dir_x < 0)
 		{
-			step_x = -1;
-			side_dist_x = (gm->player.x - map_x) * delta_dist_x;
+			x_step = -1;
+			side_distx = (gm->player.x - map_x) * t_x; // Δx * t_x
 		}
 		else
 		{
-			step_x = 1;
-			side_dist_x = (map_x + 1.0 - gm->player.x) * delta_dist_x;
+			x_step = 1;
+			side_distx = (map_x + 1.0 - gm->player.x) * t_x;
 		}
 		if (ray_dir_y < 0)
 		{
-			step_y = -1;
-			side_dist_y = (gm->player.y - map_y) * delta_dist_y;
+			y_step = -1;
+			side_disty = (gm->player.y - map_y) * t_y;	// Δx * t_x
 		}
 		else
 		{
-			step_y = 1;
-			side_dist_y = (map_y + 1.0 - gm->player.y) * delta_dist_y;
-		}
+			y_step = 1;
+			side_disty = (map_y + 1.0 - gm->player.y) * t_y;
+		}	
 	//3// Perform DDA
+		bool	hit = 0;
+		bool	vertical_side = 0;
 		while (!hit)
 		{
-			if (side_dist_x < side_dist_y)
+			if (side_distx < side_disty)
 			{
-				side_dist_x += delta_dist_x;
-				map_x += step_x;
-				side = 0;
+				map_x += x_step;
+				side_distx += t_x;
+				vertical_side = true;
 			}
 			else
 			{
-				side_dist_y += delta_dist_y;
-				map_y += step_y;
-				side = 1;
+				map_y += y_step;
+				side_disty += t_y;
+				vertical_side = false;
 			}
 			if (is_wall(gm, map_x, map_y))
 				hit = true;
 		}
 	//4// claculate the perpendicular wall distance
 		double	per_wall_dist;
-		if (side == 0)
-			per_wall_dist = (map_x - gm->player.x + (1 - step_x) / 2) / ray_dir_x;
+		if (vertical_side == true)
+			per_wall_dist = (map_x - gm->player.x + (1 - x_step) / 2) / ray_dir_x; // equivalent to : if (x_step == 1) ==> Δx / ray_dir_x       else if (x_step == -1) ==> (Δx + 1) / ray_dir_x
 		else
-			per_wall_dist = (map_y - gm->player.y + (1 - step_y) / 2) / ray_dir_y;
+			per_wall_dist = (map_y - gm->player.y + (1 - y_step) / 2) / ray_dir_y;
 	//5// calculate wall height
 		int	line_height = (int)(HEIGHT / per_wall_dist);
 		int	draw_start = -line_height / 2 + HEIGHT / 2;
@@ -251,7 +252,7 @@ void	render_image(t_game *gm)
 	//6// draw the wall column
 		y = draw_start - 1;
 		while (++y <= draw_end)
-			put_pixel(gm, x, y, 0x303030);
+			put_pixel(gm, x, y, 0x101010);
 	}
 }
 
