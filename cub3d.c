@@ -154,7 +154,7 @@ void	render_image(t_game *gm)
 
 	clear_image(gm);
 	y = -1;
-	while (++y < HEIGHT / 2)
+	while (++y <= HEIGHT / 2)
 	{
 		x = -1;
 		while (++x < WIDTH)
@@ -237,10 +237,22 @@ void	render_image(t_game *gm)
 		}
 	//4// claculate the perpendicular wall distance
 		double	per_wall_dist;
+		// per_wall_dist = (map_x - gm->player.x + (1 - x_step) / 2) / ray_dir_x; // equivalent to : if (x_step == 1) ==> Δx / ray_dir_x       else if (x_step == -1) ==> (Δx + 1) / ray_dir_x
+		//	(N.B)	per_dist = ray_dist * cos(θ) && ray_dir_x = cos(θ)
 		if (vertical_side == true)
-			per_wall_dist = (map_x - gm->player.x + (1 - x_step) / 2) / ray_dir_x; // equivalent to : if (x_step == 1) ==> Δx / ray_dir_x       else if (x_step == -1) ==> (Δx + 1) / ray_dir_x
+		{
+			if (x_step == 1)
+				per_wall_dist = (map_x - gm->player.x) / ray_dir_x;
+			else
+				per_wall_dist = (map_x - gm->player.x + 1) / ray_dir_x;
+		}
 		else
-			per_wall_dist = (map_y - gm->player.y + (1 - y_step) / 2) / ray_dir_y;
+		{
+			if (y_step == 1)
+				per_wall_dist = (map_y - gm->player.y) / ray_dir_y;
+			else
+				per_wall_dist = (map_y - gm->player.y + 1) / ray_dir_y;
+		}
 	//5// calculate wall height
 		int	line_height = (int)(HEIGHT / per_wall_dist);
 		int	draw_start = -line_height / 2 + HEIGHT / 2;
