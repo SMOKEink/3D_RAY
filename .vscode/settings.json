@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "cub3d.h": "c",
+        "mlx.h": "c",
+        "time.h": "c",
+        "ctype.h": "c"
+    }
+}

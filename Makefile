@@ -1,6 +1,6 @@
 NAME = cub3d
 
-SRC = cub3d.c parser.c rendering.c hooks.c move_player.c minimap.c door_anim.c
+SRC = cub3d.c parser.c rendering.c hooks.c move_player.c minimap.c
 
 OBJ = $(SRC:.c=.o)
 
