@@ -1,10 +1,10 @@
 NAME = cub3d
 
-SRC = cub3d.c
+SRC = cub3d.c parser.c rendering.c hooks.c move_player.c minimap.c door_anim.c
 
 OBJ = $(SRC:.c=.o)
 
-CC = cc
+CC = gcc-12
 
 CFLAGS = -Wall -Wextra -Werror -g
 
@@ -15,7 +15,7 @@ MLX_FLAGS = -L$(MLX_DIR) -lmlx_Linux -L/usr/lib -lXext -lX11 -lm -lz
 all : $(MLX) $(NAME)
 
 $(MLX):
-	$(MAKE) -C $(MLX_DIR)
+	$(MAKE) -C $(MLX_DIR) CC=$(CC)
 
 $(NAME): $(OBJ) $(MLX)
 	$(CC) $(CFLAGS) $(OBJ) $(MLX_FLAGS) -o $@
