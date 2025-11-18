@@ -36,10 +36,6 @@ void	render_image(t_game *gm)
 			put_pixel(gm, x, y, gm->floor);
 	}
 
-    // advance door animation timer and fetch current frame
-    update_door_anim(gm, 0.0);
-    t_tex *door_tex_frame = door_anim_current(gm);
-
 	x = -1;
 	while (++x <= WIDTH)
 	{
@@ -115,20 +111,20 @@ void	render_image(t_game *gm)
 				wall_x = gm->player.x + perp_dist * ray_dir_x;
 			wall_x -= floor(wall_x);
 
-			int tex_x = (int)(wall_x * (double)door_tex_frame->w);
+			int tex_x = (int)(wall_x * (double)gm->door.w);
 			if (portal_vertical && ray_dir_x > 0)
-				tex_x = door_tex_frame->w - tex_x - 1;
+				tex_x = gm->door.w - tex_x - 1;
 			if (!portal_vertical && ray_dir_y < 0)
-				tex_x = door_tex_frame->w - tex_x - 1;
+				tex_x = gm->door.w - tex_x - 1;
 
-			double step = (double)door_tex_frame->h / (double)line_len;
+			double step = (double)gm->door.h / (double)line_len;
 			double tex_pos = (draw_start - HEIGHT / 2.0 + line_len / 2.0) * step;
 			y = draw_start - 1;
 			while (++y <= draw_end)
 			{
 				int tex_y = (int)tex_pos;
 				tex_pos += step;
-				put_pixel(gm, x, y, texel_at(door_tex_frame, tex_x, tex_y));
+				put_pixel(gm, x, y, texel_at(&gm->door, tex_x, tex_y));
 			}
 			continue;
 		}
@@ -178,7 +174,7 @@ void	render_image(t_game *gm)
 
 		// use door texture if we hit a door cub; otherwise pick by orientation
 		if (cub == 'D') {
-			tex = door_tex_frame;
+			tex = &gm->door;
 		} else {
 			if (v_side)
 			{

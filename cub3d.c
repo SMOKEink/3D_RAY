@@ -169,7 +169,6 @@ int load_textures(t_game *gm)
 	}
 	if (gm->door_path && load_tex_any(gm, &gm->door, gm->door_path))
         return 1;
-	load_door_anim(gm, "textures/door/a3_");
 	return 0;
 }
 
@@ -202,7 +201,7 @@ void free_textures(t_game *gm)
 		free(gm->door_path);
 		gm->door_path = NULL;
 	}
-	free_door_anim(gm);
+	// free_hand_textures(gm);
 }
 
 int	init_game(t_game *gm, char *filename)
@@ -211,7 +210,7 @@ int	init_game(t_game *gm, char *filename)
 	gm->mlx = mlx_init();
 	if (!gm->mlx)
 		return (1);
-	gm->win = mlx_new_window(gm->mlx, WIDTH, HEIGHT, "cub3d");
+	gm->win = mlx_new_window(gm->mlx, WIDTH, HEIGHT, "CUB3D");
 	if (!gm->win)
 		return (1);
 	gm->frame.img = mlx_new_image(gm->mlx, WIDTH, HEIGHT);
@@ -227,9 +226,6 @@ int	init_game(t_game *gm, char *filename)
 		destroy_game(gm, "Failed to load textures\n");
 		return 1;
 	}
-	// if (load_hand_textures(gm)) {
-    //     fprintf(stderr, "warning: hands textures missing, continuing without HUD hands\n");
-    // }
 	// compute max width for reference (not used by is_wall)
 	gm->map_w = (int)strlen(gm->map[0]);
 	{
@@ -270,15 +266,11 @@ int close_win(t_game *g)
 	return (0);
 }
 
-
 int	main_function(t_game *gm)
 {
 	move_player(gm);
 	render_image(gm);
 	draw_minimap(gm);
-	
-	update_door_anim(gm, 0.0);
-
 	mlx_put_image_to_window(gm->mlx, gm->win, gm->frame.img, 0, 0);
 	return (0);
 }
