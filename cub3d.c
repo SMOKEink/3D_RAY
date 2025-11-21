@@ -240,7 +240,7 @@ int	init_game(t_game *gm, char *filename)
 	}
 	if (!set_player_spawn(gm))
 		return (1);
-	/* Safety: if somehow inside a wall, try to nudge to nearest floor */
+	//if somehow inside a wall, try to nudge to nearest floor
 	if (is_wall(gm, (int)gm->player.x, (int)gm->player.y))
 	{
 		int dy = -1;

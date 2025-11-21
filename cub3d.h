@@ -107,5 +107,7 @@ void	free_map(char **map);
 int		load_textures(t_game *gm);
 void 	free_textures(t_game *gm);
 void	draw_minimap(struct s_game *gm);
+unsigned int texel_at(t_tex *t, int x, int y);
+bool    inside_portal(t_game *gm, int map_x, int map_y, double side_distx, double side_disty, double ray_dir_x, double ray_dir_y, int x, int y);
 
 #endif

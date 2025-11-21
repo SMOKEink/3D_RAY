@@ -1,6 +1,6 @@
 #include "cub3d.h"
 
-static unsigned int texel_at(t_tex *t, int x, int y)
+unsigned int texel_at(t_tex *t, int x, int y)
 {
 	char *px;
 
@@ -81,53 +81,9 @@ void	render_image(t_game *gm)
 			y_step = 1;
 			side_disty = (map_y + 1.0 - gm->player.y) * t_y;
 		}
-		bool inside_portal = false;
-		if (map_y >= 0 && map_y < gm->map_h)
-		{
-			int rowlen = (int)strlen(gm->map[map_y]);
-			if (map_x >= 0 && map_x < rowlen && gm->map[map_y][map_x] == 'D')
-				inside_portal = true;
-		}
-		if (inside_portal)
-		{
-			bool portal_vertical = (side_distx < side_disty);
-			double portal_dist;
-			if (portal_vertical == true)
-				portal_dist = side_distx;
-			else
-				portal_dist = side_disty;
-
-			double perp_dist = portal_dist;
-			int line_len = (int)(HEIGHT / perp_dist);
-			int draw_start = -line_len / 2 + HEIGHT / 2;
-			int draw_end = line_len / 2 + HEIGHT / 2;
-			if (draw_start < 0) draw_start = 0;
-			if (draw_end >= HEIGHT) draw_end = HEIGHT - 1;
-
-			double wall_x;
-			if (portal_vertical)
-				wall_x = gm->player.y + perp_dist * ray_dir_y;
-			else
-				wall_x = gm->player.x + perp_dist * ray_dir_x;
-			wall_x -= floor(wall_x);
-
-			int tex_x = (int)(wall_x * (double)gm->door.w);
-			if (portal_vertical && ray_dir_x > 0)
-				tex_x = gm->door.w - tex_x - 1;
-			if (!portal_vertical && ray_dir_y < 0)
-				tex_x = gm->door.w - tex_x - 1;
-
-			double step = (double)gm->door.h / (double)line_len;
-			double tex_pos = (draw_start - HEIGHT / 2.0 + line_len / 2.0) * step;
-			y = draw_start - 1;
-			while (++y <= draw_end)
-			{
-				int tex_y = (int)tex_pos;
-				tex_pos += step;
-				put_pixel(gm, x, y, texel_at(&gm->door, tex_x, tex_y));
-			}
-			continue;
-		}
+	// IF INSIDE PORTAL
+		// if (inside_portal(gm, map_x, map_y, side_distx, side_disty, ray_dir_x, ray_dir_y, x, y))
+		// 	continue;
 	//3// Perform DDA
 		bool	hit = false;
 		bool	v_side = false;
@@ -157,25 +113,26 @@ void	render_image(t_game *gm)
 			perp_dist = side_disty - t_y;
 	//5// calculate wall height
 		int	line_len = (int)(HEIGHT / perp_dist);
-		int	draw_start = -line_len / 2 + HEIGHT / 2;
-		int	draw_end = line_len / 2 + HEIGHT / 2;
+		int	draw_start = HEIGHT / 2 - line_len / 2;
+		int	draw_end = HEIGHT / 2 + line_len / 2;
 		if (draw_start < 0)
 			draw_start = 0;
 		if (draw_end >= HEIGHT)
 			draw_end = HEIGHT - 1;
 	//6// draw the wall column
-		t_tex *tex;
-		char cub = '1';
-		if (map_y >= 0 && map_y < gm->map_h) {
+		t_tex	*tex;
+		char	cub = '1';
+		if (map_y >= 0 && map_y < gm->map_h)
+		{
 			int rowlen = (int)strlen(gm->map[map_y]);
 			if (map_x >= 0 && map_x < rowlen)
 				cub = gm->map[map_y][map_x];
 		}
 
-		// use door texture if we hit a door cub; otherwise pick by orientation
-		if (cub == 'D') {
+		if (cub == 'D')
 			tex = &gm->door;
-		} else {
+		else
+		{
 			if (v_side)
 			{
 				if (ray_dir_x > 0)
@@ -196,21 +153,21 @@ void	render_image(t_game *gm)
 			wall_x = gm->player.y + perp_dist * ray_dir_y;
 		else
 			wall_x = gm->player.x + perp_dist * ray_dir_x;
-		wall_x -= floor(wall_x);
+		wall_x -= (int)wall_x;
 
 		int tex_x = (int)(wall_x * (double)tex->w);
 		if (v_side && ray_dir_x > 0)
 			tex_x = tex->w - tex_x - 1;
 		if (!v_side && ray_dir_y < 0)
 			tex_x = tex->w - tex_x - 1;
-		double step = (double)tex->h / (double)line_len;
-		double tex_pos = (draw_start - HEIGHT / 2.0 + line_len / 2.0) * step;
+		double tex_step = (double)tex->h / (double)line_len;
+		double tex_pos = (draw_start - HEIGHT / 2.0 + line_len / 2.0) * tex_step;
 	//7// draw textured wall column
 		y = draw_start - 1;
 		while (++y <= draw_end)
 		{
 			int tex_y = (int)tex_pos;
-			tex_pos += step;
+			tex_pos += tex_step;
 			put_pixel(gm, x, y, texel_at(tex, tex_x, tex_y));
 		}
 	}

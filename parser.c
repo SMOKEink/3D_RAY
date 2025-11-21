@@ -118,7 +118,6 @@ int	parse_config(t_game *gm, const char *filename)
 
     while ((line = read_line(fd)))
     {
-        // skip leading spaces for header lines
         int i = 0;
         while (line[i] == ' ' || line[i] == '\t') i++;
 
@@ -178,26 +177,21 @@ int	parse_config(t_game *gm, const char *filename)
             map[map_len++] = line;
             line = NULL; // consumed
         }
-        // ignore empty lines before map; after map treat as part of map only if starts with 1/0
         if (line)
             free(line);
     }
 
     close(fd);
 	if (!gm->door_path)
-        gm->door_path = strdup("textures/door1.xpm");
+        gm->door_path = strdup("textures/door_1.xpm");
     if (map_len == 0)
         return 1;
-
-    // null terminate map
     map = realloc(map, sizeof(char *) * (map_len + 1));
     if (!map)
         return 1;
     map[map_len] = NULL;
     gm->map = map;
     gm->map_h = map_len;
-
-    // verify all assets present
     int chk = 0;
     while (chk < TEX_WALL_COUNT)
     {
