@@ -183,7 +183,7 @@ int	parse_config(t_game *gm, const char *filename)
 
     close(fd);
 	if (!gm->door_path)
-        gm->door_path = strdup("textures/door_1.xpm");
+        gm->door_path = strdup("textures/door2.xpm");
     if (map_len == 0)
         return 1;
     map = realloc(map, sizeof(char *) * (map_len + 1));

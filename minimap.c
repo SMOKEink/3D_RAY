@@ -1,27 +1,29 @@
 #include "cub3d.h"
 
-static inline unsigned int rgb(int r, int g, int b)
+static inline unsigned int color(int r, int g, int b)
 {
 	return ((r & 0xFF) << 16) | ((g & 0xFF) << 8) | (b & 0xFF);
 }
 
 static char map_get(t_game *gm, int mx, int my)
 {
-	if (my < 0 || my >= gm->map_h) return '1'; // treat OOB as wall
+	if (my < 0 || my >= gm->map_h)
+		return ('1');
 	int rowlen = (int)strlen(gm->map[my]);
-	if (mx < 0 || mx >= rowlen) return '1';
+	if (mx < 0 || mx >= rowlen)
+		return ('1');
 	return gm->map[my][mx];
 }
 
 void draw_minimap(t_game *gm)
 {
 	// Colors
-	const unsigned int col_bg    = rgb(24, 24, 28);    // circle background
-	const unsigned int col_ring  = rgb(255, 255, 255); // border ring
-	const unsigned int col_wall  = rgb(0, 0, 0); // walls '1'
-	const unsigned int col_door  = rgb(100, 255, 100);   // portals/doors 'D'
-	const unsigned int col_player= rgb(255, 60, 60);   // player dot/arrow
-	const unsigned int col_fov   = rgb(255, 100, 100);  // facing line
+	const unsigned int col_bg    = color(24, 24, 28);
+	const unsigned int col_ring  = color(255, 255, 255);
+	const unsigned int col_wall  = color(0, 0, 0);
+	const unsigned int col_door  = color(100, 255, 100);
+	const unsigned int col_player= color(255, 60, 60);
+	const unsigned int col_fov   = color(255, 100, 100);
 
 	// Circle center (bottom-left corner with margins)
 	const int cx = WIDTH - (MM_MARGIN_X + MM_RADIUS_PX);
@@ -30,7 +32,7 @@ void draw_minimap(t_game *gm)
 	const int R  = MM_RADIUS_PX;
 	const int R2 = R * R;
 
-	// World-to-minimap scale
+	// World to minimap scale
 	const double px_per_cell = (double)MM_PIX_PER_CELL;
 	const double cell_per_px = 1.0 / px_per_cell;
 

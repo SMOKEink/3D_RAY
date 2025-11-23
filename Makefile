@@ -4,9 +4,9 @@ SRC = cub3d.c parser.c rendering.c hooks.c move_player.c minimap.c inside_portal
 
 OBJ = $(SRC:.c=.o)
 
-CC = gcc-12
+CC = cc
 
-CFLAGS = -Wall -Wextra -Werror -g
+CFLAGS = -Wall -Wextra -Werror -g -O3
 
 MLX_DIR = minilibx-linux
 MLX = minilibx-linux/libmlx_Linux.a

@@ -3,7 +3,7 @@
 
 # define WIDTH 1280
 # define HEIGHT 720
-# define MOVE_SPEED 0.035
+# define MOVE_SPEED 0.04
 # define ROT_SPEED 0.05
 # define MOUSE_ROT_SPEED 0.00035
 

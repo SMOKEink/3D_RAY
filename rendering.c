@@ -113,12 +113,7 @@ void	render_image(t_game *gm)
 			perp_dist = side_disty - t_y;
 	//5// calculate wall height
 		int	line_len = (int)(HEIGHT / perp_dist);
-		int	draw_start = HEIGHT / 2 - line_len / 2;
-		int	draw_end = HEIGHT / 2 + line_len / 2;
-		if (draw_start < 0)
-			draw_start = 0;
-		if (draw_end >= HEIGHT)
-			draw_end = HEIGHT - 1;
+		
 	//6// draw the wall column
 		t_tex	*tex;
 		char	cub = '1';
@@ -128,7 +123,6 @@ void	render_image(t_game *gm)
 			if (map_x >= 0 && map_x < rowlen)
 				cub = gm->map[map_y][map_x];
 		}
-
 		if (cub == 'D')
 			tex = &gm->door;
 		else
@@ -148,8 +142,8 @@ void	render_image(t_game *gm)
 					tex = &gm->wall[TEX_S];
 			}
 		}
-		double wall_x;
-		if (v_side)
+		double wall_x;	// compute the exact position where the ray heats the wall
+		if (v_side)		//between 0 and 1
 			wall_x = gm->player.y + perp_dist * ray_dir_y;
 		else
 			wall_x = gm->player.x + perp_dist * ray_dir_x;
@@ -160,15 +154,24 @@ void	render_image(t_game *gm)
 			tex_x = tex->w - tex_x - 1;
 		if (!v_side && ray_dir_y < 0)
 			tex_x = tex->w - tex_x - 1;
+
+		int	line_start = HEIGHT / 2 - line_len / 2;
+		int	line_end = HEIGHT / 2 + line_len / 2;
+		if (line_start < 0)
+			line_start = 0;
+		if (line_end >= HEIGHT)
+			line_end = HEIGHT - 1;
 		double tex_step = (double)tex->h / (double)line_len;
-		double tex_pos = (draw_start - HEIGHT / 2.0 + line_len / 2.0) * tex_step;
+		double tex_pos = (line_start - (HEIGHT / 2.0 - line_len / 2.0)) * tex_step;
+											//ideal to
+		// printf("line_start = %d.00\nideal_top = %.2lf\ntex_pos = %.2lf\n\n", line_start, (HEIGHT / 2.0 - line_len / 2.0), tex_pos);
 	//7// draw textured wall column
-		y = draw_start - 1;
-		while (++y <= draw_end)
+		y = line_start - 1;
+		while (++y <= line_end)
 		{
-			int tex_y = (int)tex_pos;
+			// int tex_y = (int)tex_pos;
 			tex_pos += tex_step;
-			put_pixel(gm, x, y, texel_at(tex, tex_x, tex_y));
+			put_pixel(gm, x, y, texel_at(tex, tex_x, (int)tex_pos));
 		}
 	}
 }
