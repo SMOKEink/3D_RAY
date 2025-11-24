@@ -16,6 +16,8 @@ int key_press(int keycode, t_game *g)
 		g->keys.rot_l = 1;
 	else if (keycode == XK_Right)
 		g->keys.rot_r = 1;
+	else if (keycode == XK_e)
+		toggle_door(g);
 	return 0;
 }
 

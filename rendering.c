@@ -125,6 +125,8 @@ void	render_image(t_game *gm)
 		}
 		if (cub == 'D')
 			tex = &gm->door;
+		else if (cub == 'd')
+			continue ;
 		else
 		{
 			if (v_side)

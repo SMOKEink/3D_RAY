@@ -27,7 +27,7 @@ bool	is_wall(t_game *gm, int x, int y)
 	if (x >= row_width)
 		return (1);
 	char c = gm->map[y][x];
-	if (c == '1' || c == ' ')
+	if (c == '1' || c == ' ' || c == 'D')
 		return (1);
 	return (0);
 }
@@ -45,7 +45,69 @@ bool	is_solid_for_ray(t_game *gm, int x, int y)
         return (1);
     return (0);
 }
+void toggle_door(t_game *gm)
+{
+    int px = (int)gm->player.x;
+    int py = (int)gm->player.y;
+    double best_dist = 10.0;
+    int best_x = -1, best_y = -1;
 
+    double dirx = gm->player.dir_x;
+    double diry = gm->player.dir_y;
+    const double front_threshold = 0.5;
+
+    for (int dy = -1; dy <= 1; ++dy)
+    {
+        for (int dx = -1; dx <= 1; ++dx)
+        {
+            int tx = px + dx;
+            int ty = py + dy;
+            if (ty < 0 || ty >= gm->map_h) continue;
+            int rowlen = (int)strlen(gm->map[ty]);
+            if (tx < 0 || tx >= rowlen) continue;
+            char c = gm->map[ty][tx];
+            if (c != 'D' && c != 'd')
+                continue;
+
+            double cx = tx + 0.5;
+            double cy = ty + 0.5;
+            double vx = cx - gm->player.x;
+            double vy = cy - gm->player.y;
+            double dist = sqrt(vx*vx + vy*vy);
+            if (dist < 1e-6) continue;
+
+            double dot = (vx/dist) * dirx + (vy/dist) * diry;
+            if (dot < front_threshold) // not in front
+                continue;
+
+            if (dist < best_dist)
+            {
+                best_dist = dist;
+                best_x = tx;
+                best_y = ty;
+            }
+        }
+    }
+    if (best_x == -1 || best_dist > 1.2)
+        return;
+
+    char *cell = &gm->map[best_y][best_x];
+    int player_tx = (int)gm->player.x;
+    int player_ty = (int)gm->player.y;
+
+    if (*cell == 'd')
+    {
+        if (player_tx == best_x && player_ty == best_y)
+            return;
+        if (best_dist < 0.35)
+            return;
+        *cell = 'D';
+    }
+    else if (*cell == 'D')
+    {
+        *cell = 'd';
+    }
+}
 void	clear_image(t_game *game)
 {
 	int	i;
@@ -169,6 +231,8 @@ int load_textures(t_game *gm)
 	}
 	if (gm->door_path && load_tex_any(gm, &gm->door, gm->door_path))
         return 1;
+	if (gm->hand_path && load_tex_any(gm, &gm->hand, gm->hand_path))
+        return 1;
 	return 0;
 }
 
@@ -202,6 +266,44 @@ void free_textures(t_game *gm)
 		gm->door_path = NULL;
 	}
 	// free_hand_textures(gm);
+}
+
+void	draw_hands(t_game *gm)
+{
+    if (!gm->hand.img || !gm->hand.data)
+        return;
+    int crop_top = (gm->hand.h * HAND_CROP_TOP_PCT) / 100;
+    if (crop_top < 0) crop_top = 0;
+    if (crop_top >= gm->hand.h) crop_top = gm->hand.h - 1;
+    int crop_h = gm->hand.h - crop_top;
+
+    int target_h = HAND_HEIGHT_PX;
+    if (target_h > HEIGHT - 20) target_h = HEIGHT - 20;
+    if (target_h < 40) target_h = 40;
+    int target_w = (int)((double)gm->hand.w * (double)target_h / (double)crop_h);
+
+    int bob = (int)(sin(gm->hand_phase) * HAND_BOB_PIX);
+    int base_x = (WIDTH - target_w) / 2;
+    int base_y = HEIGHT - target_h - 8 + bob;
+
+    for (int ty = 0; ty < target_h; ++ty)
+    {
+        int sy = crop_top + (ty * crop_h / target_h);
+        int py = base_y + ty;
+        if (py < 0 || py >= HEIGHT) continue;
+        for (int tx = 0; tx < target_w; ++tx)
+        {
+            int sx = tx * gm->hand.w / target_w;
+            int px = base_x + tx;
+            if (px < 0 || px >= WIDTH) continue;
+            unsigned int col = texel_at(&gm->hand, sx, sy);
+            int r = (col >> 16) & 0xFF;
+            int g = (col >> 8) & 0xFF;
+            int b = col & 0xFF;
+            if (r + g + b < 45) continue; // treat dark (black square) as transparent
+            put_pixel(gm, px, py, col);
+        }
+    }
 }
 
 int	init_game(t_game *gm, char *filename)
@@ -271,6 +373,7 @@ int	main_function(t_game *gm)
 	move_player(gm);
 	render_image(gm);
 	draw_minimap(gm);
+	draw_hands(gm);
 	mlx_put_image_to_window(gm->mlx, gm->win, gm->frame.img, 0, 0);
 	return (0);
 }

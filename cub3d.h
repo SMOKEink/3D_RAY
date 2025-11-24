@@ -1,9 +1,10 @@
 #ifndef CUB3D_H
 # define CUB3D_H
 
-# define WIDTH 1280
-# define HEIGHT 720
-# define MOVE_SPEED 0.04
+# define WIDTH 2500
+# define HEIGHT 1340
+
+# define MOVE_SPEED 0.14
 # define ROT_SPEED 0.05
 # define MOUSE_ROT_SPEED 0.00035
 
@@ -83,13 +84,20 @@ typedef struct s_game
 	t_tex   	wall[TEX_WALL_COUNT];
 	char		*door_path;
 	t_tex		door;
+	char		*hand_path;
+	t_tex		hand;
+	double		hand_phase;
 }	t_game;
 
 
-#define MM_RADIUS_PX      75     // pixel radius of minimap circle
-#define MM_PIX_PER_CELL    8     // pixels per world cell on the minimap
-#define MM_MARGIN_X       12     // offset from screen edge
+#define MM_RADIUS_PX      75
+#define MM_PIX_PER_CELL    8
+#define MM_MARGIN_X       12
 #define MM_MARGIN_Y       12
+
+#define HAND_HEIGHT_PX      900    // change this to resize the hand
+#define HAND_BOB_PIX        14     // vertical bob amplitude
+#define HAND_CROP_TOP_PCT   40     // % of source trimmed from top (0..99)
 
 int		parse_config(t_game *gm, const char *filename);
 void	render_image(t_game *gm);
@@ -108,6 +116,8 @@ int		load_textures(t_game *gm);
 void 	free_textures(t_game *gm);
 void	draw_minimap(struct s_game *gm);
 unsigned int texel_at(t_tex *t, int x, int y);
+void	toggle_door(t_game *gm);
+void	draw_hands(t_game *gm);
 bool    inside_portal(t_game *gm, int map_x, int map_y, double side_distx, double side_disty, double ray_dir_x, double ray_dir_y, int x, int y);
 
 #endif

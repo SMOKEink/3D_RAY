@@ -28,6 +28,7 @@ void	move_player(t_game *gm)
 	t_player	*p = &gm->player;
 	double		nx;
 	double		ny;
+	bool		moving = false;
 
 	if (gm->keys.up)
 	{
@@ -37,6 +38,7 @@ void	move_player(t_game *gm)
 			p->x = nx;
 		if (!collides_at(gm, p->x, ny))
 			p->y = ny;
+		moving = true;
 	}
 	if (gm->keys.down)
 	{
@@ -46,6 +48,7 @@ void	move_player(t_game *gm)
 			p->x = nx;
 		if (!collides_at(gm, p->x, ny))
 			p->y = ny;
+		moving = true;
 	}
 	if (gm->keys.right)
 	{
@@ -55,6 +58,7 @@ void	move_player(t_game *gm)
 			p->x = nx;
 		if (!collides_at(gm, p->x, ny))
 			p->y = ny;
+		moving = true;
 	}
 	if (gm->keys.left)
 	{
@@ -64,6 +68,7 @@ void	move_player(t_game *gm)
 			p->x = nx;
 		if (!collides_at(gm, p->x, ny))
 			p->y = ny;
+		moving = true;
 	}
 	if (gm->keys.rot_l || gm->keys.rot_r)
 	{
@@ -82,6 +87,10 @@ void	move_player(t_game *gm)
 		p->plane_x = p->plane_x * cos(angle) - p->plane_y * sin(angle);
 		p->plane_y = old_plane_x * sin(angle) + p->plane_y * cos(angle);
 	}
+	if (moving)
+		gm->hand_phase += 0.12;
+	else
+		gm->hand_phase *= 0.92;
 }
 
 void rotate_player(t_player *p, double angle)

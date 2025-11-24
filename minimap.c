@@ -22,6 +22,7 @@ void draw_minimap(t_game *gm)
 	const unsigned int col_ring  = color(255, 255, 255);
 	const unsigned int col_wall  = color(0, 0, 0);
 	const unsigned int col_door  = color(100, 255, 100);
+	const unsigned int col_door_open = color(40, 120, 40);
 	const unsigned int col_player= color(255, 60, 60);
 	const unsigned int col_fov   = color(255, 100, 100);
 
@@ -58,13 +59,15 @@ void draw_minimap(t_game *gm)
 
 			int mx = (int)floor(wx);
 			int my = (int)floor(wy);
-			char tile = map_get(gm, mx, my);
+			char cub = map_get(gm, mx, my);
 
 			// Draw nearest features only (inside circle). Prioritize solid features.
-			if (tile == '1')
+			if (cub == '1')
 				put_pixel(gm, px, py, col_wall);
-			else if (tile == 'D')
+			else if (cub == 'D')
 				put_pixel(gm, px, py, col_door);
+			else if (cub == 'd')
+				put_pixel(gm, px, py, col_door_open);
 		}
 	}
 
