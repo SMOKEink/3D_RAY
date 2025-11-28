@@ -25,43 +25,33 @@ void draw_minimap(t_game *gm)
 	const unsigned int col_door_open = color(40, 120, 40);
 	const unsigned int col_player= color(255, 60, 60);
 	const unsigned int col_fov   = color(255, 100, 100);
-
-	// Circle center (bottom-left corner with margins)
 	const int cx = WIDTH - (MM_MARGIN_X + MM_RADIUS_PX);
 	const int cy = HEIGHT - (MM_MARGIN_Y + MM_RADIUS_PX);
-
 	const int R  = MM_RADIUS_PX;
 	const int R2 = R * R;
-
-	// World to minimap scale
 	const double px_per_cell = (double)MM_PIX_PER_CELL;
 	const double cell_per_px = 1.0 / px_per_cell;
-
-	// Draw filled circular background and content
-	for (int dy = -R; dy <= R; ++dy)
+	int	dy = -R;
+	while (++dy <= R)
 	{
 		int py = cy + dy;
 		if (py < 0 || py >= HEIGHT) continue;
-		for (int dx = -R; dx <= R; ++dx)
+		int dx = -R;
+		while (++dx <= R)
 		{
 			int px = cx + dx;
 			if (px < 0 || px >= WIDTH) continue;
 
 			int d2 = dx*dx + dy*dy;
-			if (d2 > R2) continue; // outside circle
-
-			// Background
+			if (d2 > R2)
+				continue;
 			put_pixel(gm, px, py, col_bg);
-
-			// Map sampling: convert pixel offset to world offset (in cells)
-			double wx = gm->player.x - dx * cell_per_px;      // NEW: flip X
+			double wx = gm->player.x - dx * cell_per_px;
             double wy = gm->player.y + dy * cell_per_px;
 
 			int mx = (int)floor(wx);
 			int my = (int)floor(wy);
 			char cub = map_get(gm, mx, my);
-
-			// Draw nearest features only (inside circle). Prioritize solid features.
 			if (cub == '1')
 				put_pixel(gm, px, py, col_wall);
 			else if (cub == 'D')
@@ -70,9 +60,8 @@ void draw_minimap(t_game *gm)
 				put_pixel(gm, px, py, col_door_open);
 		}
 	}
-
-	// Border ring
-	for (int a = -R; a <= R; ++a)
+	int a = -R;
+	while (++a <= R)
 	{
 		int x1 = cx + a;
 		int y1_top = cy - (int)sqrt((double)(R2 - a*a));
@@ -83,11 +72,11 @@ void draw_minimap(t_game *gm)
 			if (y1_bot >= 0 && y1_bot < HEIGHT) put_pixel(gm, x1, y1_bot, col_ring);
 		}
 	}
-
-	// Player dot at center
-	for (int oy = -2; oy <= 2; ++oy)
+	int oy = -2;
+	while (++oy <= 2)
 	{
-		for (int ox = -2; ox <= 2; ++ox)
+		int ox = -2;
+		while (++ox <= 2)
 		{
 			int px = cx + ox;
 			int py = cy + oy;
@@ -95,17 +84,16 @@ void draw_minimap(t_game *gm)
 				put_pixel(gm, px, py, col_player);
 		}
 	}
-
-	// Facing direction line
 	const double len_px = R * 0.3;
     double dxp = gm->player.dir_x;
     double dyp = gm->player.dir_y;
-    for (double t = 0; t <= len_px; t += 1.0)
+	double t = 0;
+    while (t <= len_px)
     {
-        // int px = (int)(cx + dxp * t); // OLD
-        int px = (int)(cx - dxp * t);     // NEW: flip X direction
+        int px = (int)(cx - dxp * t);
         int py = (int)(cy + dyp * t);
         if (px >= 0 && px < WIDTH && py >= 0 && py < HEIGHT)
-            put_pixel(gm, px, py, col_fov);
+			put_pixel(gm, px, py, col_fov);
+		t += 1.0;
     }
 }

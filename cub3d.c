@@ -62,24 +62,24 @@ void toggle_door(t_game *gm)
         {
             int tx = px + dx;
             int ty = py + dy;
-            if (ty < 0 || ty >= gm->map_h) continue;
+            if (ty < 0 || ty >= gm->map_h)
+				continue;
             int rowlen = (int)strlen(gm->map[ty]);
-            if (tx < 0 || tx >= rowlen) continue;
+            if (tx < 0 || tx >= rowlen)
+				continue;
             char c = gm->map[ty][tx];
             if (c != 'D' && c != 'd')
                 continue;
-
             double cx = tx + 0.5;
             double cy = ty + 0.5;
             double vx = cx - gm->player.x;
             double vy = cy - gm->player.y;
             double dist = sqrt(vx*vx + vy*vy);
-            if (dist < 1e-6) continue;
-
+            if (dist < 1e-6)
+				continue;
             double dot = (vx/dist) * dirx + (vy/dist) * diry;
-            if (dot < front_threshold) // not in front
+            if (dot < front_threshold)
                 continue;
-
             if (dist < best_dist)
             {
                 best_dist = dist;
@@ -90,11 +90,9 @@ void toggle_door(t_game *gm)
     }
     if (best_x == -1 || best_dist > 1.2)
         return;
-
     char *cell = &gm->map[best_y][best_x];
     int player_tx = (int)gm->player.x;
     int player_ty = (int)gm->player.y;
-
     if (*cell == 'd')
     {
         if (player_tx == best_x && player_ty == best_y)
@@ -149,10 +147,14 @@ static int	set_player_spawn(t_game *gm)
 			{
 				gm->player.x = x + 0.5;
 				gm->player.y = y + 0.5;
-				if (c == 'N') { gm->player.dir_x = 0;  gm->player.dir_y = -1; }
-				if (c == 'S') { gm->player.dir_x = 0;  gm->player.dir_y = 1; }
-				if (c == 'E') { gm->player.dir_x = 1;  gm->player.dir_y = 0; }
-				if (c == 'W') { gm->player.dir_x = -1; gm->player.dir_y = 0; }
+				if (c == 'N') { gm->player.dir_x = 0;
+					gm->player.dir_y = -1; }
+				if (c == 'S') { gm->player.dir_x = 0;
+					gm->player.dir_y = 1; }
+				if (c == 'E') { gm->player.dir_x = 1;
+					gm->player.dir_y = 0; }
+				if (c == 'W') { gm->player.dir_x = -1;
+					gm->player.dir_y = 0; }
 				gm->player.plane_x = gm->player.dir_y * fov;
 				gm->player.plane_y = -gm->player.dir_x * fov;
 				gm->map[y][x] = '0';

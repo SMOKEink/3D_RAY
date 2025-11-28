@@ -113,14 +113,14 @@ int mouse_move(int x, int y, t_game *g)
 	int cx = WIDTH / 2;
 	int cy = HEIGHT / 2;
 	if (x == cx && y == cy)
-		return 0; /* ignore our own recenter event */
+		return (0);
 	(void)y;
-	int dx = x - cx; /* horizontal delta from center */
+	int dx = x - cx;
 	if (dx != 0)
 	{
-		angle = -dx * MOUSE_ROT_SPEED; /* negative = clockwise when moving mouse to the right */
+		angle = -dx * MOUSE_ROT_SPEED;
 		rotate_player(&g->player, angle);
 	}
 	mlx_mouse_move(g->mlx, g->win, cx, cy);
-	return 0;
+	return (0);
 }
