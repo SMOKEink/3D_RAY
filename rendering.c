@@ -81,9 +81,6 @@ void	render_image(t_game *gm)
 			y_step = 1;
 			side_disty = (map_y + 1.0 - gm->player.y) * t_y;
 		}
-	// IF INSIDE PORTAL
-		// if (inside_portal(gm, map_x, map_y, side_distx, side_disty, ray_dir_x, ray_dir_y, x, y))
-		// 	continue;
 	//3// Perform DDA
 		bool	hit = false;
 		bool	v_side = false;
@@ -101,7 +98,7 @@ void	render_image(t_game *gm)
 				side_disty += t_y;
 				v_side = false;
 			}
-			if (is_solid_for_ray(gm, map_x, map_y))
+			if (is_wall(gm, map_x, map_y))
 				hit = true;
 		}
 	//4// claculate the perpendicular wall distance

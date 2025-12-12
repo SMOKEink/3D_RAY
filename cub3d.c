@@ -1,122 +1,19 @@
 #include "cub3d.h"
 
-void destroy_game(t_game *g, const char *msg)
-{
-	if (msg)
-		fprintf(stderr, "%s\n", msg);
-	if (g->mlx && g->win)
-		mlx_mouse_show(g->mlx, g->win);
-	free_textures(g);
-	if (g->frame.img && g->mlx)
-		mlx_destroy_image(g->mlx, g->frame.img);
-	if (g->win && g->mlx)
-		mlx_destroy_window(g->mlx, g->win);
-	if (g->mlx)
-	{
-		mlx_destroy_display(g->mlx);
-		free(g->mlx);
-	}
-	free_map(g->map);
-	exit(0);
-}
 bool	is_wall(t_game *gm, int x, int y)
 {
+	char	c;
+	int		row_width;
+
 	if (x < 0 || y < 0 || y >= gm->map_h)
 		return (1);
-	int row_width = (int)strlen(gm->map[y]);
+	row_width = (int)strlen(gm->map[y]);
 	if (x >= row_width)
 		return (1);
-	char c = gm->map[y][x];
+	c = gm->map[y][x];
 	if (c == '1' || c == ' ' || c == 'D')
 		return (1);
 	return (0);
-}
-
-
-bool	is_solid_for_ray(t_game *gm, int x, int y)
-{
-    if (x < 0 || y < 0 || y >= gm->map_h)
-        return (1);
-    int row_width = (int)strlen(gm->map[y]);
-    if (x >= row_width)
-        return (1);
-    char c = gm->map[y][x];
-    if (c == '1' || c == ' ' || c == 'D')
-        return (1);
-    return (0);
-}
-void toggle_door(t_game *gm)
-{
-    int px = (int)gm->player.x;
-    int py = (int)gm->player.y;
-    double best_dist = 10.0;
-    int best_x = -1, best_y = -1;
-
-    double dirx = gm->player.dir_x;
-    double diry = gm->player.dir_y;
-    const double front_threshold = 0.5;
-
-    for (int dy = -1; dy <= 1; ++dy)
-    {
-        for (int dx = -1; dx <= 1; ++dx)
-        {
-            int tx = px + dx;
-            int ty = py + dy;
-            if (ty < 0 || ty >= gm->map_h)
-				continue;
-            int rowlen = (int)strlen(gm->map[ty]);
-            if (tx < 0 || tx >= rowlen)
-				continue;
-            char c = gm->map[ty][tx];
-            if (c != 'D' && c != 'd')
-                continue;
-            double cx = tx + 0.5;
-            double cy = ty + 0.5;
-            double vx = cx - gm->player.x;
-            double vy = cy - gm->player.y;
-            double dist = sqrt(vx*vx + vy*vy);
-            if (dist < 1e-6)
-				continue;
-            double dot = (vx/dist) * dirx + (vy/dist) * diry;
-            if (dot < front_threshold)
-                continue;
-            if (dist < best_dist)
-            {
-                best_dist = dist;
-                best_x = tx;
-                best_y = ty;
-            }
-        }
-    }
-    if (best_x == -1 || best_dist > 1.2)
-        return;
-    char *cell = &gm->map[best_y][best_x];
-    int player_tx = (int)gm->player.x;
-    int player_ty = (int)gm->player.y;
-    if (*cell == 'd')
-    {
-        if (player_tx == best_x && player_ty == best_y)
-            return;
-        if (best_dist < 0.35)
-            return;
-        *cell = 'D';
-    }
-    else if (*cell == 'D')
-    {
-        *cell = 'd';
-    }
-}
-void	clear_image(t_game *game)
-{
-	int	i;
-	int	total;
-	int	*img_data;
-
-	img_data = (int *)game->frame.data_img;
-	total = (game->frame.line_len / 4) * HEIGHT;
-	i = -1;
-	while (++i < total)
-		img_data[i] = 0;
 }
 
 void	put_pixel(t_game *gm, int x, int y, int color)
@@ -127,185 +24,6 @@ void	put_pixel(t_game *gm, int x, int y, int color)
 		return ;
 	dst = gm->frame.data_img + y * gm->frame.line_len + x * (gm->frame.bpp / 8);
 	*(unsigned int *)dst = color;
-}
-
-static int	set_player_spawn(t_game *gm)
-{
-	int     y;
-	int     x;
-	char    c;
-	const double fov = 0.66;
-
-	y = 0;
-	while (gm->map[y])
-	{
-		x = 0;
-		while (gm->map[y][x])
-		{
-			c = gm->map[y][x];
-			if (c == 'N' || c == 'S' || c == 'E' || c == 'W')
-			{
-				gm->player.x = x + 0.5;
-				gm->player.y = y + 0.5;
-				if (c == 'N') { gm->player.dir_x = 0;
-					gm->player.dir_y = -1; }
-				if (c == 'S') { gm->player.dir_x = 0;
-					gm->player.dir_y = 1; }
-				if (c == 'E') { gm->player.dir_x = 1;
-					gm->player.dir_y = 0; }
-				if (c == 'W') { gm->player.dir_x = -1;
-					gm->player.dir_y = 0; }
-				gm->player.plane_x = gm->player.dir_y * fov;
-				gm->player.plane_y = -gm->player.dir_x * fov;
-				gm->map[y][x] = '0';
-				return 1;
-			}
-			x++;
-		}
-		y++;
-	}
-	y = 0;
-	while (gm->map[y])
-	{
-		x = 0;
-		while (gm->map[y][x])
-		{
-			if (gm->map[y][x] == '0')
-			{
-				gm->player.x = x + 0.5;
-				gm->player.y = y + 0.5;
-				gm->player.dir_x = 1; // default east
-				gm->player.dir_y = 0;
-				gm->player.plane_x = gm->player.dir_y * fov;
-				gm->player.plane_y = -gm->player.dir_x * fov;
-				return 1;
-			}
-			x++;
-		}
-		y++;
-	}
-	return 0;
-}
-
-static int load_tex_any(t_game *gm, t_tex *tex, const char *path)
-{
-	tex->img = mlx_xpm_file_to_image(gm->mlx, (char *)path, &tex->w, &tex->h);
-	if (!tex->img)
-	{
-		fprintf(stderr, "Texture load failed: %s\n", path);
-		return 1;
-	}
-	tex->data = mlx_get_data_addr(tex->img, &tex->bpp, &tex->line_len, &tex->endian);
-	if (!tex->data)
-	{
-		fprintf(stderr, "Data addr failed: %s\n", path);
-		return 1;
-	}
-	return 0;
-}
-static int load_tex(t_game *gm, int idx, const char *path)
-{
-	t_tex *t = &gm->wall[idx];
-
-	t->img = mlx_xpm_file_to_image(gm->mlx, (char *)path, &t->w, &t->h);
-	if (!t->img)
-	{
-		fprintf(stderr, "Texture load failed: %s\n", path);
-		return 1;
-	}
-	t->data = mlx_get_data_addr(t->img, &t->bpp, &t->line_len, &t->endian);
-	if (!t->data)
-	{
-		fprintf(stderr, "Data addr failed: %s\n", path);
-		return 1;
-	}
-	return 0;
-}
-
-int load_textures(t_game *gm)
-{
-	int i = 0;
-	while (i < TEX_WALL_COUNT)
-	{
-		if (load_tex(gm, i, gm->tex_path[i]))
-			return 1;
-		i++;
-	}
-	if (gm->door_path && load_tex_any(gm, &gm->door, gm->door_path))
-        return 1;
-	if (gm->hand_path && load_tex_any(gm, &gm->hand, gm->hand_path))
-        return 1;
-	return 0;
-}
-
-void free_textures(t_game *gm)
-{
-	int i = 0;
-	while (i < TEX_WALL_COUNT)
-	{
-		if (gm->wall[i].img && gm->mlx)
-			mlx_destroy_image(gm->mlx, gm->wall[i].img);
-		gm->wall[i].img = NULL;
-		gm->wall[i].data = NULL;
-		i++;
-	}
-
-	i = 0;
-	while (i < TEX_WALL_COUNT)
-	{
-		if (gm->tex_path[i])
-			free(gm->tex_path[i]);
-		gm->tex_path[i] = NULL;
-		i++;
-	}
-	if (gm->door_path)
-	{
-		if (gm->door.img && gm->mlx)
-        mlx_destroy_image(gm->mlx, gm->door.img);
-	    gm->door.img = NULL;
-	    gm->door.data = NULL;
-		free(gm->door_path);
-		gm->door_path = NULL;
-	}
-	// free_hand_textures(gm);
-}
-
-void	draw_hands(t_game *gm)
-{
-    if (!gm->hand.img || !gm->hand.data)
-        return;
-    int crop_top = (gm->hand.h * HAND_CROP_TOP_PCT) / 100;
-    if (crop_top < 0) crop_top = 0;
-    if (crop_top >= gm->hand.h) crop_top = gm->hand.h - 1;
-    int crop_h = gm->hand.h - crop_top;
-
-    int target_h = HAND_HEIGHT_PX;
-    if (target_h > HEIGHT - 20) target_h = HEIGHT - 20;
-    if (target_h < 40) target_h = 40;
-    int target_w = (int)((double)gm->hand.w * (double)target_h / (double)crop_h);
-
-    int bob = (int)(sin(gm->hand_phase) * HAND_BOB_PIX);
-    int base_x = (WIDTH - target_w) / 2;
-    int base_y = HEIGHT - target_h - 8 + bob;
-
-    for (int ty = 0; ty < target_h; ++ty)
-    {
-        int sy = crop_top + (ty * crop_h / target_h);
-        int py = base_y + ty;
-        if (py < 0 || py >= HEIGHT) continue;
-        for (int tx = 0; tx < target_w; ++tx)
-        {
-            int sx = tx * gm->hand.w / target_w;
-            int px = base_x + tx;
-            if (px < 0 || px >= WIDTH) continue;
-            unsigned int col = texel_at(&gm->hand, sx, sy);
-            int r = (col >> 16) & 0xFF;
-            int g = (col >> 8) & 0xFF;
-            int b = col & 0xFF;
-            if (r + g + b < 45) continue; // treat dark (black square) as transparent
-            put_pixel(gm, px, py, col);
-        }
-    }
 }
 
 int	init_game(t_game *gm, char *filename)
@@ -344,22 +62,6 @@ int	init_game(t_game *gm, char *filename)
 	}
 	if (!set_player_spawn(gm))
 		return (1);
-	//if somehow inside a wall, try to nudge to nearest floor
-	if (is_wall(gm, (int)gm->player.x, (int)gm->player.y))
-	{
-		int dy = -1;
-		while (dy <= 1)
-		{
-			int dx = -1;
-			while (dx <= 1)
-			{
-				if (!is_wall(gm, (int)gm->player.x + dx, (int)gm->player.y + dy))
-				{ gm->player.x += dx; gm->player.y += dy; dy = 2; break; }
-				dx++;
-			}
-			dy++;
-		}
-	}
 	mlx_mouse_hide(gm->mlx, gm->win);
 	return (0);
 }
@@ -388,6 +90,7 @@ int main(int ac, char **av)
 		return (printf("Error\n"), 1);
 	if (init_game(&gm, av[1]))
 		return (1);
+	
 	mlx_loop_hook(gm.mlx, main_function, &gm);
 	mlx_hook(gm.win, 2, KeyPressMask, key_press, &gm);
 	mlx_hook(gm.win, 3, KeyReleaseMask, key_release, &gm);

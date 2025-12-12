@@ -2,7 +2,7 @@
 # define CUB3D_H
 
 # define WIDTH 1920
-# define HEIGHT 1000
+# define HEIGHT 1009
 
 # define MOVE_SPEED 0.11
 # define ROT_SPEED 0.05
@@ -12,6 +12,7 @@
 # include <unistd.h>
 # include <stdbool.h>
 # include <math.h>
+# include <fcntl.h>
 # include <sys/time.h>
 # include <stdio.h>
 # include <string.h>
@@ -36,6 +37,7 @@ typedef	struct s_player
 	double	dir_y;
 	double	plane_x;
 	double	plane_y;
+	bool	moving;
 }	t_player;
 
 typedef	struct s_keys
@@ -58,13 +60,13 @@ typedef	struct s_keys
 #endif
 
 typedef struct s_tex {
-    void   *img;
-    char   *data;
-    int     w;
-    int     h;
-    int     bpp;
-    int     line_len;
-    int     endian;
+	void   *img;
+	char   *data;
+	int     w;
+	int     h;
+	int     bpp;
+	int     line_len;
+	int     endian;
 } t_tex;
 
 typedef struct s_game
@@ -89,35 +91,53 @@ typedef struct s_game
 	double		hand_phase;
 }	t_game;
 
+//COLORS
+// const unsigned int col_bg    = color(24, 24, 28);
+// 	const unsigned int col_ring  = color(255, 255, 255);
+// 	const unsigned int col_wall  = color(0, 0, 0);
+// 	const unsigned int col_door  = color(100, 255, 100);
+// 	const unsigned int col_door_open = color(40, 120, 40);
+// 	const unsigned int col_player= color(255, 60, 60);
+// 	const unsigned int col_fov   = color(255, 100, 100);
+# define COL_ROAD 			1579036
+# define COL_RING 			16777215
+# define COL_WALL 			0
+# define COL_DOOR 			6618980
+# define COL_OPENED_DOOR	2652200
+# define COL_PLAYER			16727100
+# define COL_DIRECTION		16737380
 
-#define MM_RADIUS_PX      75
-#define MM_PIX_PER_CELL    8
-#define MM_MARGIN_X       12
-#define MM_MARGIN_Y       12
+#define MM_RADIUS_PX		75
+#define MM_PIX_PER_CELL		8
+#define MM_MARGIN_X			12
+#define MM_MARGIN_Y			12
+//Hands
+#define HAND_HEIGHT_PX		900
+#define HAND_BOB_PIX		14
+#define HAND_CROP_TOP_PCT	30
+#define HAND_OFFSET_Y		30
 
-#define HAND_HEIGHT_PX      900    // change this to resize the hand
-#define HAND_BOB_PIX        14     // vertical bob amplitude
-#define HAND_CROP_TOP_PCT   40     // % of source trimmed from top (0..99)
+void			toggle_door(t_game *gm);
+int				load_tex_any(t_game *gm, t_tex *tex, const char *path);
+void			free_textures(t_game *gm);
 
-int		parse_config(t_game *gm, const char *filename);
-void	render_image(t_game *gm);
-bool	is_wall(t_game *gm, int x, int y);
-void	put_pixel(t_game *gm, int x, int y, int color);
-int		close_win(t_game *g);
-int		mouse_move(int x, int y, t_game *g);
-void	rotate_player(t_player *p, double angle);
-int		key_press(int keycode, t_game *g);
-int		key_release(int keycode, t_game *g);
-void	move_player(t_game *gm);
-bool	is_solid_for_ray(t_game *gm, int x, int y);
+int				parse_config(t_game *gm, const char *filename);
+void			render_image(t_game *gm);
+bool			is_wall(t_game *gm, int x, int y);
+void			put_pixel(t_game *gm, int x, int y, int color);
+int				close_win(t_game *g);
+int				mouse_move(int x, int y, t_game *g);
+void			rotate_player(t_player *p, double angle);
+int				key_press(int keycode, t_game *g);
+int				key_release(int keycode, t_game *g);
+void			move_player(t_game *gm);
 
-void	free_map(char **map);
-int		load_textures(t_game *gm);
-void 	free_textures(t_game *gm);
-void	draw_minimap(struct s_game *gm);
-unsigned int texel_at(t_tex *t, int x, int y);
-void	toggle_door(t_game *gm);
-void	draw_hands(t_game *gm);
-bool    inside_portal(t_game *gm, int map_x, int map_y, double side_distx, double side_disty, double ray_dir_x, double ray_dir_y, int x, int y);
+void			free_map(char **map);
+int				load_textures(t_game *gm);
+void			draw_minimap(struct s_game *gm);
+unsigned int	texel_at(t_tex *t, int x, int y);
+int				set_player_spawn(t_game *gm);
+void			destroy_game(t_game *g, const char *msg);
+void			draw_hands(t_game *gm);
 
 #endif

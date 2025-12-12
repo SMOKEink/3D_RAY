@@ -1,7 +1,7 @@
-NO textures/mor2.xpm
-SO textures/south.xpm
-WE textures/mor7.xpm
-EA textures/wall10.xpm
+NO textures/wall100.xpm
+SO textures/wall100.xpm
+WE textures/wall100.xpm
+EA textures/wall100.xpm
 
 F 09,09,09
 C 22,12,90
