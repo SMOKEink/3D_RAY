@@ -69,6 +69,15 @@ typedef struct s_tex {
 	int     endian;
 } t_tex;
 
+#define DOOR_FRONT_THRESHOLD 0.5
+
+typedef struct s_door_pick
+{
+	int		x;
+	int		y;
+	double	dist;
+}	t_door_pick;
+
 typedef struct s_ray
 {
 	double  cam_x;

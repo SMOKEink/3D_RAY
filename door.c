@@ -1,14 +1,5 @@
 #include "cub3d.h"
 
-#define DOOR_FRONT_THRESHOLD 0.5
-
-typedef struct s_door_pick
-{
-	int		x;
-	int		y;
-	double	dist;
-}	t_door_pick;
-
 static int	in_bounds(t_game *gm, int x, int y)
 {
 	int	rowlen;
