@@ -1,10 +1,10 @@
 #ifndef CUB3D_H
 # define CUB3D_H
 
-# define WIDTH 1920
-# define HEIGHT 1009
+# define WIDTH 1280
+# define HEIGHT 720
 
-# define MOVE_SPEED 0.11
+# define MOVE_SPEED 0.08
 # define ROT_SPEED 0.05
 # define MOUSE_ROT_SPEED 0.00035
 

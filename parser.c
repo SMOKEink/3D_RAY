@@ -182,7 +182,7 @@ int	parse_config(t_game *gm, const char *filename)
 
     close(fd);
 	if (!gm->door_path)
-        gm->door_path = strdup("textures/door9.xpm");
+        gm->door_path = strdup("textures/door_redr.xpm");
     if (!gm->hand_path)
         gm->hand_path = strdup("textures/hands.xpm");
     if (map_len == 0)

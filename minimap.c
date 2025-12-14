@@ -13,11 +13,11 @@ static char map_get(t_game *gm, int mx, int my)
 void draw_minimap(t_game *gm)
 {
 	//SETUP
-	const int x_cen = 85;
-	const int y_cen = 85;
-	const int R  = 75;
+	const int x_cen = 80;
+	const int y_cen = 80;
+	const int R  = 70;
 	const int R2 = R * R;
-	const double px_per_cell = 8.00;
+	const double px_per_cell = 7.00;
 	const double cell_per_px = 1.0 / px_per_cell;
 	//FILL DISK AREA
 	int	y = -R;

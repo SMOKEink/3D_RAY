@@ -1,7 +1,5 @@
 #include "cub3d.h"
 
-void rotate_player(t_player *p, double angle);
-
 static int collides_at(t_game *gm, double x, double y)
 {
 	double	r;
@@ -32,67 +30,6 @@ static int collides_at(t_game *gm, double x, double y)
 	return (0);
 }
 
-void	move_player(t_game *gm)
-{
-	t_player	*p;
-	double		new_x;
-	double		new_y;
-
-	p = &gm->player;
-	p->moving = false;
-	if (gm->keys.up)
-	{
-		new_x = p->x + p->dir_x * MOVE_SPEED;
-		new_y = p->y + p->dir_y * MOVE_SPEED;
-		if (!collides_at(gm, new_x, p->y))
-			p->x = new_x;
-		if (!collides_at(gm, p->x, new_y))
-			p->y = new_y;
-		p->moving = true;
-	}
-	if (gm->keys.down)
-	{
-		new_x = p->x - p->dir_x * MOVE_SPEED;
-		new_y = p->y - p->dir_y * MOVE_SPEED;
-		if (!collides_at(gm, new_x, p->y))
-			p->x = new_x;
-		if (!collides_at(gm, p->x, new_y))
-			p->y = new_y;
-		p->moving = true;
-	}
-	if (gm->keys.right)
-	{
-		new_x = p->x + p->dir_y * MOVE_SPEED;
-		new_y = p->y - p->dir_x * MOVE_SPEED;
-		if (!collides_at(gm, new_x, p->y))
-			p->x = new_x;
-		if (!collides_at(gm, p->x, new_y))
-			p->y = new_y;
-		p->moving = true;
-	}
-	if (gm->keys.left)
-	{
-		new_x = p->x - p->dir_y * MOVE_SPEED;
-		new_y = p->y + p->dir_x * MOVE_SPEED;
-		if (!collides_at(gm, new_x, p->y))
-			p->x = new_x;
-		if (!collides_at(gm, p->x, new_y))
-			p->y = new_y;
-		p->moving = true;
-	}
-	if (gm->keys.rot_l || gm->keys.rot_r)
-	{
-		if (gm->keys.rot_r)
-			rotate_player(p, -ROT_SPEED);
-		else
-			rotate_player(p, ROT_SPEED);
-	}
-	if (p->moving)
-		gm->hand_phase += 0.12;
-	else
-		gm->hand_phase *= 0.92;
-}
-
 void rotate_player(t_player *p, double angle)
 {
 	double old_dir_x;
@@ -104,6 +41,85 @@ void rotate_player(t_player *p, double angle)
 	old_plane_x = p->plane_x;
 	p->plane_x = p->plane_x * cos(angle) - p->plane_y * sin(angle);
 	p->plane_y = old_plane_x * sin(angle) + p->plane_y * cos(angle);
+}
+
+void	move_forward(t_game *gm, t_player *p)
+{
+	double		new_x;
+	double		new_y;
+	
+	new_x = p->x + p->dir_x * MOVE_SPEED;
+	new_y = p->y + p->dir_y * MOVE_SPEED;
+	if (!collides_at(gm, new_x, p->y))
+		p->x = new_x;
+	if (!collides_at(gm, p->x, new_y))
+		p->y = new_y;
+	p->moving = true;	
+}
+void	move_backward(t_game *gm, t_player *p)
+{
+	double		new_x;
+	double		new_y;
+
+	new_x = p->x - p->dir_x * MOVE_SPEED;
+	new_y = p->y - p->dir_y * MOVE_SPEED;
+	if (!collides_at(gm, new_x, p->y))
+		p->x = new_x;
+	if (!collides_at(gm, p->x, new_y))
+		p->y = new_y;
+	p->moving = true;
+}
+void	move_right(t_game *gm, t_player *p)
+{
+	double		new_x;
+	double		new_y;
+
+	new_x = p->x + p->dir_y * MOVE_SPEED;
+	new_y = p->y - p->dir_x * MOVE_SPEED;
+	if (!collides_at(gm, new_x, p->y))
+		p->x = new_x;
+	if (!collides_at(gm, p->x, new_y))
+		p->y = new_y;
+	p->moving = true;
+}
+void	move_left(t_game *gm, t_player *p)
+{
+	double		new_x;
+	double		new_y;
+
+	new_x = p->x - p->dir_y * MOVE_SPEED;
+	new_y = p->y + p->dir_x * MOVE_SPEED;
+	if (!collides_at(gm, new_x, p->y))
+		p->x = new_x;
+	if (!collides_at(gm, p->x, new_y))
+		p->y = new_y;
+	p->moving = true;
+}
+void	move_player(t_game *gm)
+{
+	t_player	*p;
+
+	p = &gm->player;
+	p->moving = false;
+	if (gm->keys.up)
+		move_forward(gm, p);
+	if (gm->keys.down)
+		move_backward(gm, p);
+	if (gm->keys.right)
+		move_right(gm, p);
+	if (gm->keys.left)
+		move_left(gm, p);
+	if (gm->keys.rot_l || gm->keys.rot_r)
+	{
+		if (gm->keys.rot_r)
+			rotate_player(p, -ROT_SPEED);
+		else
+			rotate_player(p, ROT_SPEED);
+	}
+	if (p->moving)
+		gm->hand_phase += 0.12;
+	else
+		gm->hand_phase *= 0.92;
 }
 
 int	mouse_move(int x, int y, t_game *g)
