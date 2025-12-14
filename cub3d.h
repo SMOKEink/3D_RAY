@@ -69,6 +69,35 @@ typedef struct s_tex {
 	int     endian;
 } t_tex;
 
+typedef struct s_ray
+{
+	double  cam_x;
+	double  dir_x;
+	double  dir_y;
+	int     map_x;
+	int     map_y;
+	double  delta_x;
+	double  delta_y;
+	double  side_x;
+	double  side_y;
+	int     step_x;
+	int     step_y;
+	bool    hit_vertical;
+	double  perp_dist;
+}   t_ray;
+
+typedef struct s_slice
+{
+	int     line_len;
+	int     line_start;
+	int     line_end;
+	double  tex_step;
+	double  tex_pos;
+	int     tex_x;
+	int     tex_y;
+	int		column;
+}   t_slice;
+
 typedef struct s_game
 {
 	void		*mlx;
