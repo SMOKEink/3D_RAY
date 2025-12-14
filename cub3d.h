@@ -136,10 +136,11 @@ typedef struct s_game
 # define COL_PLAYER			16727100
 # define COL_DIRECTION		16737380
 
-#define MM_RADIUS_PX		75
-#define MM_PIX_PER_CELL		8
-#define MM_MARGIN_X			12
-#define MM_MARGIN_Y			12
+#define MMAP_X				80
+#define MMAP_Y				80
+#define MMAP_R				70
+#define MMAP_PIX_PER_CELL	7
+
 //Hands
 #define HAND_HEIGHT_PX		900
 #define HAND_BOB_PIX		14

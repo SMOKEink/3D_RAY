@@ -15,17 +15,13 @@ static int collides_at(t_game *gm, double x, double y)
 	y_min = floor(y - r);
 	x_max = floor(x + r);
 	y_max = floor(y + r);
-	ix = x_min;
-	while (ix <= x_max)
+	ix = x_min - 1;
+	while (++ix <= x_max)
 	{
-		iy = y_min;
-		while (iy <= y_max)
-		{
+		iy = y_min - 1;
+		while (++iy <= y_max)
 			if (is_wall(gm, ix, iy))
 				return (1);
-			iy++;
-		}
-		ix++;
 	}
 	return (0);
 }
